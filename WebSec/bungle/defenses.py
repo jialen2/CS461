@@ -1,4 +1,4 @@
-import re, os
+import re, os, binascii
 from bottle import FormsDict, HTTPError
 from hashlib import md5
 
@@ -26,6 +26,8 @@ class XSSEncodeAngles(object):
     @staticmethod
     def filter(user_input):
         #TODO: 1 of 2 in this file. Complete this filter definition to replace < and > with their HTML entities
+        user_input = user_input.replace('<', '&lt;')
+        user_input = user_input.replace('>', '&gt;')
         return user_input	
 
 ############################################################
@@ -54,7 +56,9 @@ class CSRFToken(object):
         token = request.get_cookie("csrf_token")
 
         #TODO: 2 of 2 in this file. Implement a CSRF token (see pseudocode in handout)
-
+        if token is None:
+            token = binascii.hexlify(os.urandom(16)).decode()
+        response.set_cookie("csrf_token", token)
         return token
     @staticmethod
     def formHTML(token):

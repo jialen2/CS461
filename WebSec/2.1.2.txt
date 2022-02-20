@@ -1,0 +1,17 @@
+USE project2;
+
+CREATE TABLE IF NOT EXISTS users (
+    id INT UNSIGNED PRIMARY KEY NOT NULL AUTO_INCREMENT,
+    username VARCHAR(32) NOT NULL,
+    salt VARCHAR(64) NOT NULL,
+    passwordhash VARCHAR(64) NOT NULL,
+    UNIQUE (username),
+    INDEX (username)
+);
+
+CREATE TABLE IF NOT EXISTS history (
+    id INT UNSIGNED PRIMARY KEY NOT NULL AUTO_INCREMENT,
+    user_id INT UNSIGNED NOT NULL,
+    query VARCHAR(2048) NOT NULL,
+    INDEX (user_id)
+);
